@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PawOS — Pet Wellness OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --cream:#faf6f0;
+  --cream2:#f3ece0;
+  --forest:#2d4a3e;
+  --forest2:#3d6354;
+  --terra:#c4613a;
+  --terra2:#e07a52;
+  --gold:#d4a843;
+  --sage:#8aab99;
+  --text:#1e2e28;
+  --muted:#7a9185;
+  --white:#ffffff;
+  --border:#e0d5c5;
+  --surface:#ffffff;
+  --shadow:rgba(45,74,62,0.10);
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  font-weight:400;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── GRAIN ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;
+}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:90;
+  background:rgba(250,246,240,0.88);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.9rem 2rem;
+}
+.logo{
+  font-family:'Playfair Display',serif;
+  font-size:1.35rem;font-weight:700;
+  color:var(--forest);letter-spacing:-0.01em;
+}
+.logo span{color:var(--terra)}
+.nav-tabs{display:flex;gap:0.25rem}
+.nav-tab{
+  padding:0.45rem 1.1rem;border-radius:999px;
+  font-size:0.8rem;font-weight:500;cursor:pointer;
+  background:transparent;border:none;color:var(--muted);
+  transition:all 0.2s;font-family:'Outfit',sans-serif;
+}
+.nav-tab:hover{color:var(--forest)}
+.nav-tab.active{background:var(--forest);color:var(--white)}
+.nav-right{display:flex;gap:0.75rem;align-items:center}
+.add-pet-btn{
+  padding:0.45rem 1.2rem;
+  background:var(--terra);color:var(--white);
+  border:none;border-radius:999px;font-size:0.8rem;
+  font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;
+  transition:all 0.2s;
+}
+.add-pet-btn:hover{background:var(--terra2);transform:translateY(-1px)}
+
+/* ── PAGES ── */
+.page{display:none;position:relative;z-index:1}
+.page.active{display:block}
+
+/* ── HERO / ONBOARD ── */
+#page-onboard{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:3rem 2rem;
+}
+#page-onboard.active{display:flex}
+.hero-eyebrow{
+  font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--terra);margin-bottom:1.2rem;font-weight:600;
+}
+.hero-h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(2.6rem,6vw,4.2rem);
+  font-weight:700;line-height:1.1;
+  color:var(--forest);margin-bottom:1rem;
+  max-width:640px;
+}
+.hero-h1 em{color:var(--terra);font-style:italic}
+.hero-sub{
+  font-size:1rem;color:var(--muted);max-width:440px;
+  line-height:1.7;margin-bottom:2.5rem;
+}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+.btn-primary{
+  padding:0.85rem 2.2rem;background:var(--forest);color:var(--white);
+  border:none;border-radius:999px;font-size:0.95rem;font-weight:600;
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.btn-primary:hover{background:var(--forest2);transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow)}
+.btn-secondary{
+  padding:0.85rem 2.2rem;background:transparent;color:var(--forest);
+  border:2px solid var(--forest);border-radius:999px;font-size:0.95rem;font-weight:600;
+  cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.btn-secondary:hover{background:var(--cream2)}
+.hero-features{
+  display:flex;gap:2.5rem;margin-top:3.5rem;flex-wrap:wrap;justify-content:center;
+}
+.hf{text-align:center}
+.hf-icon{font-size:1.8rem;margin-bottom:0.5rem}
+.hf-label{font-size:0.78rem;color:var(--muted);font-weight:500}
+
+/* ── ADD PET MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(30,46,40,0.45);
+  z-index:200;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--white);border-radius:20px;padding:2.2rem;
+  width:90%;max-width:440px;
+  box-shadow:0 24px 60px rgba(30,46,40,0.2);
+  animation:modalIn 0.3s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.modal-title{
+  font-family:'Playfair Display',serif;font-size:1.4rem;
+  color:var(--forest);margin-bottom:0.3rem;
+}
+.modal-sub{font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem}
+.form-row{margin-bottom:1rem}
+.form-label{font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:0.4rem}
+.form-input{
+  width:100%;padding:0.65rem 1rem;
+  background:var(--cream);border:1px solid var(--border);
+  border-radius:10px;font-family:'Outfit',sans-serif;font-size:0.88rem;
+  color:var(--text);outline:none;transition:border 0.2s;
+}
+.form-input:focus{border-color:var(--forest)}
+.species-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem}
+.species-btn{
+  padding:0.6rem;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--cream);cursor:pointer;font-size:1.3rem;text-align:center;
+  transition:all 0.2s;
+}
+.species-btn:hover,.species-btn.sel{border-color:var(--forest);background:rgba(45,74,62,0.06)}
+.modal-actions{display:flex;gap:0.75rem;margin-top:1.5rem}
+.modal-actions .btn-primary{flex:1;padding:0.75rem}
+.modal-cancel{
+  padding:0.75rem 1.2rem;background:transparent;border:1.5px solid var(--border);
+  border-radius:999px;font-family:'Outfit',sans-serif;font-size:0.88rem;
+  color:var(--muted);cursor:pointer;transition:all 0.2s;
+}
+.modal-cancel:hover{border-color:var(--muted)}
+
+/* ── DASHBOARD ── */
+#page-dashboard{padding:2rem 1.5rem 4rem;max-width:1200px;margin:0 auto}
+.dash-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.dash-greeting{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--forest)}
+.dash-greeting span{color:var(--terra)}
+.pet-switcher{display:flex;gap:0.5rem;flex-wrap:wrap}
+.pet-chip{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.5rem 1rem;border-radius:999px;
+  border:1.5px solid var(--border);background:var(--white);
+  cursor:pointer;font-size:0.82rem;font-weight:500;transition:all 0.2s;
+}
+.pet-chip:hover{border-color:var(--forest)}
+.pet-chip.active{background:var(--forest);border-color:var(--forest);color:var(--white)}
+.pet-chip .pet-dot{width:8px;height:8px;border-radius:50%;background:var(--terra)}
+.pet-chip.active .pet-dot{background:var(--sage)}
+
+/* ── GRID ── */
+.dash-grid{
+  display:grid;
+  grid-template-columns:300px 1fr 280px;
+  grid-template-rows:auto;
+  gap:1.25rem;
+}
+@media(max-width:1000px){.dash-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.dash-grid{grid-template-columns:1fr}}
+
+.card{
+  background:var(--white);border-radius:16px;
+  border:1px solid var(--border);padding:1.5rem;
+  box-shadow:0 2px 12px var(--shadow);
+  animation:cardIn 0.5s ease both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card:nth-child(2){animation-delay:0.07s}
+.card:nth-child(3){animation-delay:0.14s}
+.card:nth-child(4){animation-delay:0.21s}
+.card:nth-child(5){animation-delay:0.28s}
+
+.card-label{font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:1rem}
+.card-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--forest);margin-bottom:0.3rem}
+
+/* ── PET PROFILE CARD ── */
+.pet-profile-card{grid-row:span 2}
+.pet-avatar-wrap{
+  width:90px;height:90px;border-radius:50%;
+  background:linear-gradient(135deg,var(--sage),var(--forest));
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.5rem;margin:0 auto 1rem;
+  box-shadow:0 4px 18px rgba(45,74,62,0.2);
+}
+.pet-name-big{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--forest);text-align:center}
+.pet-breed{font-size:0.8rem;color:var(--muted);text-align:center;margin-bottom:1.2rem}
+.pet-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.2rem}
+.pet-stat{background:var(--cream);border-radius:10px;padding:0.75rem;text-align:center}
+.pet-stat-val{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--forest);font-weight:700}
+.pet-stat-label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:0.2rem}
+.wellness-score-wrap{text-align:center;margin-top:0.5rem}
+.wellness-ring{
+  width:90px;height:90px;border-radius:50%;
+  background:conic-gradient(var(--forest) 0% 78%, var(--cream2) 78% 100%);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 0.5rem;
+  box-shadow:inset 0 0 0 10px var(--white);
+}
+.wellness-ring-inner{
+  width:70px;height:70px;border-radius:50%;background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--forest);font-weight:700;
+}
+.wellness-label{font-size:0.72rem;color:var(--muted)}
+
+/* ── HEALTH TIMELINE ── */
+.timeline-card{grid-column:span 1}
+.tl-item{
+  display:flex;gap:0.85rem;align-items:flex-start;
+  padding:0.75rem 0;border-bottom:1px solid var(--border);
+}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:0.9rem;
+  margin-top:0.1rem;
+}
+.tl-dot.vacc{background:rgba(45,74,62,0.1)}
+.tl-dot.visit{background:rgba(196,97,58,0.1)}
+.tl-dot.med{background:rgba(212,168,67,0.1)}
+.tl-dot.alert{background:rgba(196,97,58,0.15)}
+.tl-content{flex:1}
+.tl-title{font-size:0.85rem;font-weight:600;color:var(--text)}
+.tl-meta{font-size:0.72rem;color:var(--muted);margin-top:0.15rem}
+.tl-badge{
+  font-size:0.62rem;padding:0.2rem 0.55rem;border-radius:999px;
+  font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-top:0.3rem;display:inline-block;
+}
+.tl-badge.due{background:rgba(196,97,58,0.12);color:var(--terra)}
+.tl-badge.ok{background:rgba(45,74,62,0.1);color:var(--forest)}
+.tl-badge.upcoming{background:rgba(212,168,67,0.12);color:var(--gold)}
+
+/* ── VITALS ── */
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+.vital-cell{background:var(--cream);border-radius:10px;padding:0.85rem 1rem}
+.vital-val{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--forest);font-weight:700}
+.vital-unit{font-size:0.7rem;color:var(--muted)}
+.vital-name{font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:0.2rem}
+.vital-trend{font-size:0.7rem;margin-top:0.3rem}
+.vital-trend.up{color:var(--terra)}
+.vital-trend.ok{color:var(--forest2)}
+
+/* ── UPCOMING CARE ── */
+.care-item{
+  display:flex;align-items:center;gap:0.85rem;
+  padding:0.75rem 0;border-bottom:1px solid var(--border);
+}
+.care-item:last-child{border-bottom:none}
+.care-date{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--cream2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.care-date-day{font-family:'Playfair Display',serif;font-size:1rem;color:var(--forest);font-weight:700;line-height:1}
+.care-date-mon{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.care-info{flex:1}
+.care-title{font-size:0.85rem;font-weight:600;color:var(--text)}
+.care-sub{font-size:0.72rem;color:var(--muted)}
+.care-action{
+  padding:0.3rem 0.75rem;border-radius:999px;
+  font-size:0.68rem;font-weight:600;cursor:pointer;
+  background:var(--forest);color:var(--white);border:none;
+  font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.care-action:hover{background:var(--forest2)}
+
+/* ── AI INSIGHTS CARD ── */
+.insights-card{grid-column:span 1}
+.insight-item{
+  display:flex;gap:0.75rem;padding:0.8rem;
+  background:var(--cream);border-radius:10px;margin-bottom:0.6rem;
+}
+.insight-item:last-child{margin-bottom:0}
+.insight-icon{font-size:1.1rem;flex-shrink:0;margin-top:0.1rem}
+.insight-text{font-size:0.8rem;color:var(--text);line-height:1.5}
+.insight-text strong{color:var(--forest)}
+.insight-priority{
+  display:inline-block;font-size:0.6rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;
+  padding:0.15rem 0.5rem;border-radius:999px;margin-top:0.35rem;
+}
+.insight-priority.high{background:rgba(196,97,58,0.12);color:var(--terra)}
+.insight-priority.med{background:rgba(212,168,67,0.12);color:var(--gold)}
+.insight-priority.low{background:rgba(45,74,62,0.1);color:var(--forest2)}
+
+/* ── AI CHAT ── */
+#page-ai{padding:2rem 1.5rem 4rem;max-width:800px;margin:0 auto}
+.chat-header{margin-bottom:1.5rem}
+.chat-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--forest)}
+.chat-header p{font-size:0.85rem;color:var(--muted);margin-top:0.3rem}
+.chat-wrap{
+  background:var(--white);border-radius:16px;border:1px solid var(--border);
+  box-shadow:0 2px 12px var(--shadow);overflow:hidden;
+}
+.chat-messages{
+  height:420px;overflow-y:auto;padding:1.5rem;
+  display:flex;flex-direction:column;gap:1rem;
+}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+.msg{max-width:80%;animation:msgIn 0.3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end}
+.msg.ai{align-self:flex-start}
+.msg-bubble{
+  padding:0.85rem 1.1rem;border-radius:14px;
+  font-size:0.87rem;line-height:1.6;
+}
+.msg.user .msg-bubble{background:var(--forest);color:var(--white);border-radius:14px 14px 2px 14px}
+.msg.ai .msg-bubble{background:var(--cream);color:var(--text);border-radius:14px 14px 14px 2px;border:1px solid var(--border)}
+.msg-meta{font-size:0.65rem;color:var(--muted);margin-top:0.3rem;padding:0 0.25rem}
+.msg.user .msg-meta{text-align:right}
+.chat-input-row{
+  display:flex;gap:0.75rem;padding:1rem 1.5rem;
+  border-top:1px solid var(--border);background:var(--cream);
+}
+.chat-input{
+  flex:1;padding:0.75rem 1.1rem;
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:12px;font-family:'Outfit',sans-serif;font-size:0.88rem;
+  color:var(--text);outline:none;resize:none;transition:border 0.2s;
+}
+.chat-input:focus{border-color:var(--forest)}
+.chat-send{
+  padding:0.75rem 1.4rem;background:var(--terra);color:var(--white);
+  border:none;border-radius:12px;font-family:'Outfit',sans-serif;
+  font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.2s;
+  white-space:nowrap;
+}
+.chat-send:hover{background:var(--terra2)}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed}
+.quick-prompts{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem}
+.qp{
+  padding:0.4rem 0.9rem;background:var(--white);border:1.5px solid var(--border);
+  border-radius:999px;font-size:0.75rem;cursor:pointer;font-family:'Outfit',sans-serif;
+  color:var(--forest);transition:all 0.2s;
+}
+.qp:hover{border-color:var(--forest);background:rgba(45,74,62,0.04)}
+.api-key-notice{
+  background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.3);
+  border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;
+  display:flex;gap:0.75rem;align-items:flex-start;
+}
+.api-key-notice .icon{font-size:1.1rem;flex-shrink:0}
+.api-key-notice p{font-size:0.8rem;color:var(--text);line-height:1.5}
+.api-key-notice strong{color:var(--forest)}
+.key-input-row{display:flex;gap:0.5rem;margin-top:0.5rem}
+.key-input{
+  flex:1;padding:0.5rem 0.8rem;border:1.5px solid var(--border);
+  border-radius:8px;font-size:0.8rem;font-family:'Outfit',sans-serif;outline:none;
+}
+.key-input:focus{border-color:var(--forest)}
+.key-save-btn{
+  padding:0.5rem 1rem;background:var(--forest);color:var(--white);
+  border:none;border-radius:8px;font-size:0.78rem;font-weight:600;
+  cursor:pointer;font-family:'Outfit',sans-serif;
+}
+
+/* ── RECORDS ── */
+#page-records{padding:2rem 1.5rem 4rem;max-width:900px;margin:0 auto}
+.records-header{margin-bottom:1.5rem}
+.records-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--forest)}
+.records-header p{font-size:0.85rem;color:var(--muted);margin-top:0.3rem}
+.records-tabs{display:flex;gap:0.4rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.rtab{
+  padding:0.45rem 1.1rem;border-radius:999px;font-size:0.8rem;
+  border:1.5px solid var(--border);background:var(--white);
+  color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.rtab.active{background:var(--forest);border-color:var(--forest);color:var(--white)}
+.record-table{
+  background:var(--white);border-radius:14px;border:1px solid var(--border);overflow:hidden;
+  box-shadow:0 2px 10px var(--shadow);
+}
+.rt-head{
+  display:grid;grid-template-columns:100px 1fr 1fr 120px;
+  gap:0;background:var(--cream2);padding:0.75rem 1.2rem;
+  font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:600;
+}
+.rt-row{
+  display:grid;grid-template-columns:100px 1fr 1fr 120px;
+  gap:0;padding:1rem 1.2rem;border-bottom:1px solid var(--border);align-items:center;
+  transition:background 0.15s;
+}
+.rt-row:last-child{border-bottom:none}
+.rt-row:hover{background:var(--cream)}
+.rt-cell{font-size:0.83rem;color:var(--text)}
+.rt-cell.date{color:var(--muted);font-size:0.78rem}
+.rt-cell.doc{color:var(--forest);font-weight:500}
+.status-pill{
+  display:inline-block;padding:0.2rem 0.65rem;border-radius:999px;
+  font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;
+}
+.status-pill.done{background:rgba(45,74,62,0.1);color:var(--forest2)}
+.status-pill.due{background:rgba(196,97,58,0.1);color:var(--terra)}
+.status-pill.active{background:rgba(212,168,67,0.1);color:var(--gold)}
+
+/* ── VET COMMS ── */
+#page-vet{padding:2rem 1.5rem 4rem;max-width:700px;margin:0 auto}
+.vet-header{margin-bottom:1.5rem}
+.vet-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--forest)}
+.vet-header p{font-size:0.85rem;color:var(--muted);margin-top:0.3rem}
+.vet-card{
+  background:var(--white);border-radius:16px;border:1px solid var(--border);
+  box-shadow:0 2px 12px var(--shadow);padding:1.5rem;margin-bottom:1.2rem;
+}
+.vet-info-row{display:flex;gap:1rem;align-items:center;margin-bottom:1.2rem}
+.vet-avatar{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--sage),var(--forest));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.vet-name{font-weight:600;font-size:0.95rem;color:var(--text)}
+.vet-creds{font-size:0.75rem;color:var(--muted)}
+.vet-clinic{font-size:0.75rem;color:var(--forest);font-weight:500;margin-top:0.1rem}
+.vet-actions{display:flex;gap:0.6rem;flex-wrap:wrap}
+.vet-btn{
+  padding:0.5rem 1.1rem;border-radius:999px;font-size:0.78rem;
+  font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.vet-btn.primary{background:var(--forest);color:var(--white);border:none}
+.vet-btn.outline{background:transparent;color:var(--forest);border:1.5px solid var(--forest)}
+.vet-btn:hover{opacity:0.85;transform:translateY(-1px)}
+.vet-msg-thread{margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1.2rem}
+.vet-msg{display:flex;gap:0.75rem;margin-bottom:1rem}
+.vet-msg:last-child{margin-bottom:0}
+.vet-msg-avatar{
+  width:32px;height:32px;border-radius:50%;background:var(--cream2);
+  display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;
+}
+.vet-msg-body{flex:1}
+.vet-msg-name{font-size:0.72rem;font-weight:600;color:var(--forest);margin-bottom:0.25rem}
+.vet-msg-text{font-size:0.83rem;color:var(--text);line-height:1.55;background:var(--cream);padding:0.7rem 0.9rem;border-radius:10px}
+.vet-msg-time{font-size:0.65rem;color:var(--muted);margin-top:0.25rem}
+
+/* ── TYPING INDICATOR ── */
+.typing-indicator{display:inline-flex;gap:4px;align-items:center;padding:0.85rem 1.1rem}
+.typing-dot{width:7px;height:7px;background:var(--sage);border-radius:50%;animation:bounce 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:3rem 1rem;color:var(--muted);
+}
+.empty-state .icon{font-size:2.5rem;margin-bottom:0.75rem}
+.empty-state p{font-size:0.88rem;line-height:1.6}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--forest);color:var(--white);padding:0.7rem 1.4rem;
+  border-radius:999px;font-size:0.83rem;font-weight:500;
+  z-index:500;opacity:0;transition:all 0.3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav" style="display:none">
+  <div class="logo">Paw<span>OS</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="showPage('ai')">AI Health</button>
+    <button class="nav-tab" onclick="showPage('records')">Records</button>
+    <button class="nav-tab" onclick="showPage('vet')">Vet Connect</button>
+  </div>
+  <div class="nav-right">
+    <button class="add-pet-btn" onclick="openModal()">+ Add Pet</button>
+  </div>
+</nav>
+
+<!-- ONBOARDING -->
+<div id="page-onboard" class="page active">
+  <div class="hero-eyebrow">🐾 Introducing PawOS</div>
+  <h1 class="hero-h1">Your pet's health, <em>unified</em> and intelligent</h1>
+  <p class="hero-sub">Stop juggling apps, paper records, and missed vet reminders. PawOS brings AI-powered preventive care to every pet parent.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="openModal()">Get Started — It's Free</button>
+    <button class="btn-secondary" onclick="loadDemo()">See a Demo →</button>
+  </div>
+  <div class="hero-features">
+    <div class="hf"><div class="hf-icon">🧠</div><div class="hf-label">AI Health Insights</div></div>
+    <div class="hf"><div class="hf-icon">📋</div><div class="hf-label">Unified Records</div></div>
+    <div class="hf"><div class="hf-icon">💬</div><div class="hf-label">Vet Communication</div></div>
+    <div class="hf"><div class="hf-icon">⏰</div><div class="hf-label">Care Reminders</div></div>
+    <div class="hf"><div class="hf-icon">📊</div><div class="hf-label">Vitals Tracking</div></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page">
+  <div class="dash-header">
+    <div>
+      <div class="dash-greeting">Good morning, <span id="greeting-name">Anvi</span> 🌿</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin-top:0.3rem">Here's today's wellness overview</div>
+    </div>
+    <div class="pet-switcher" id="pet-switcher"></div>
+  </div>
+  <div class="dash-grid" id="dash-grid"></div>
+</div>
+
+<!-- AI HEALTH -->
+<div id="page-ai" class="page">
+  <div class="chat-header">
+    <h2>🧠 AI Wellness Assistant</h2>
+    <p>Ask anything about your pet's health, symptoms, nutrition, or care.</p>
+  </div>
+  <div class="api-key-notice" id="api-notice">
+    <div class="icon">🔑</div>
+    <div>
+      <p><strong>Connect your Anthropic API key</strong> to enable real AI responses. Your key is stored only in your browser session and never sent anywhere except Anthropic's API.</p>
+      <div class="key-input-row">
+        <input class="key-input" id="api-key-input" type="password" placeholder="sk-ant-..."/>
+        <button class="key-save-btn" onclick="saveApiKey()">Save Key</button>
+      </div>
+    </div>
+  </div>
+  <div class="quick-prompts" id="quick-prompts">
+    <button class="qp" onclick="sendQuick(this)">Is my dog's weight healthy?</button>
+    <button class="qp" onclick="sendQuick(this)">What vaccines are due?</button>
+    <button class="qp" onclick="sendQuick(this)">Signs of dental disease in cats</button>
+    <button class="qp" onclick="sendQuick(this)">Nutrition tips for senior dogs</button>
+    <button class="qp" onclick="sendQuick(this)">When should I visit a vet urgently?</button>
+  </div>
+  <div class="chat-wrap">
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg ai">
+        <div class="msg-bubble">Hi! I'm your PawOS AI health assistant 🐾<br><br>I can help you understand symptoms, interpret health patterns, suggest preventive care, and answer questions about your pet's wellbeing. Add your API key above for full AI responses, or try the demo mode!</div>
+        <div class="msg-meta">PawOS AI · just now</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask about your pet's health..." onkeydown="handleKey(event)"></textarea>
+      <button class="chat-send" id="send-btn" onclick="sendMessage()">Send →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECORDS -->
+<div id="page-records" class="page">
+  <div class="records-header">
+    <h2>📋 Health Records</h2>
+    <p>Complete medical history for all your pets.</p>
+  </div>
+  <div class="records-tabs">
+    <button class="rtab active" onclick="switchRecordTab(this,'vaccinations')">Vaccinations</button>
+    <button class="rtab" onclick="switchRecordTab(this,'visits')">Vet Visits</button>
+    <button class="rtab" onclick="switchRecordTab(this,'medications')">Medications</button>
+    <button class="rtab" onclick="switchRecordTab(this,'labwork')">Lab Work</button>
+  </div>
+  <div id="records-content"></div>
+</div>
+
+<!-- VET CONNECT -->
+<div id="page-vet" class="page">
+  <div class="vet-header">
+    <h2>💬 Vet Connect</h2>
+    <p>Stay in touch with your veterinary care team.</p>
+  </div>
+  <div id="vet-content"></div>
+</div>
+
+<!-- ADD PET MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">Add your pet</div>
+    <div class="modal-sub">Tell us a little about your companion</div>
+    <div class="form-row">
+      <label class="form-label">Pet's name</label>
+      <input class="form-input" id="pet-name" placeholder="e.g. Luna, Bruno, Whiskers"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Species</label>
+      <div class="species-grid" id="species-grid">
+        <div class="species-btn sel" data-val="dog">🐶<br><span style="font-size:0.65rem">Dog</span></div>
+        <div class="species-btn" data-val="cat">🐱<br><span style="font-size:0.65rem">Cat</span></div>
+        <div class="species-btn" data-val="rabbit">🐰<br><span style="font-size:0.65rem">Rabbit</span></div>
+        <div class="species-btn" data-val="bird">🦜<br><span style="font-size:0.65rem">Bird</span></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+      <div class="form-row">
+        <label class="form-label">Breed</label>
+        <input class="form-input" id="pet-breed" placeholder="e.g. Labrador"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Age (years)</label>
+        <input class="form-input" id="pet-age" type="number" placeholder="3"/>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+      <div class="form-row">
+        <label class="form-label">Weight (kg)</label>
+        <input class="form-input" id="pet-weight" type="number" placeholder="12"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Your name</label>
+        <input class="form-input" id="owner-name" placeholder="Your first name"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="savePet()">Create Profile →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── STATE ── */
+let pets = [];
+let activePet = null;
+let apiKey = '';
+let chatHistory = [];
+let selectedSpecies = 'dog';
+
+/* ── SPECIES CHIP ── */
+document.querySelectorAll('.species-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.species-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selectedSpecies = btn.dataset.val;
+  });
+});
+
+/* ── MODAL ── */
+function openModal(){ document.getElementById('add-modal').classList.add('open') }
+function closeModal(){ document.getElementById('add-modal').classList.remove('open') }
+
+function savePet(){
+  const name = document.getElementById('pet-name').value.trim();
+  const owner = document.getElementById('owner-name').value.trim();
+  if(!name){ showToast('Please enter your pet\'s name'); return; }
+  const pet = {
+    id: Date.now(),
+    name,
+    species: selectedSpecies,
+    breed: document.getElementById('pet-breed').value || 'Mixed',
+    age: parseFloat(document.getElementById('pet-age').value) || 2,
+    weight: parseFloat(document.getElementById('pet-weight').value) || 10,
+    owner: owner || 'Pet Parent',
+    emoji: {dog:'🐶',cat:'🐱',rabbit:'🐰',bird:'🦜'}[selectedSpecies]
+  };
+  pets.push(pet);
+  activePet = pet;
+  if(owner) document.getElementById('greeting-name').textContent = owner;
+  closeModal();
+  showPage('dashboard');
+  renderDashboard();
+  showToast(`${pet.name}'s profile created! 🐾`);
+}
+
+/* ── DEMO ── */
+function loadDemo(){
+  pets = [{
+    id:1, name:'Bruno', species:'dog', breed:'Golden Retriever',
+    age:4, weight:28, owner:'Anvi', emoji:'🐶'
+  },{
+    id:2, name:'Luna', species:'cat', breed:'Persian',
+    age:2, weight:4.2, owner:'Anvi', emoji:'🐱'
+  }];
+  activePet = pets[0];
+  document.getElementById('greeting-name').textContent = 'Anvi';
+  showPage('dashboard');
+  renderDashboard();
+  showToast('Demo loaded! Explore PawOS 🐾');
+}
+
+/* ── PAGE NAVIGATION ── */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    const pages=['dashboard','ai','records','vet'];
+    t.classList.toggle('active', pages[i]===id);
+  });
+  if(id==='records') renderRecords('vaccinations');
+  if(id==='vet') renderVet();
+  if(id!=='onboard') document.getElementById('main-nav').style.display='flex';
+}
+
+/* ── DASHBOARD ── */
+function renderDashboard(){
+  document.getElementById('main-nav').style.display='flex';
+  if(!pets.length){ document.getElementById('dash-grid').innerHTML='<div style="grid-column:1/-1"><div class="empty-state"><div class="icon">🐾</div><p>No pets yet. Add your first pet to get started!</p></div></div>'; return; }
+
+  // Pet switcher
+  const sw = document.getElementById('pet-switcher');
+  sw.innerHTML = pets.map(p => `<div class="pet-chip ${p.id===activePet?.id?'active':''}" onclick="switchPet(${p.id})"><span class="pet-dot"></span>${p.emoji} ${p.name}</div>`).join('');
+
+  const p = activePet;
+  const wellness = Math.min(98, 60 + (p.age < 8 ? 20 : 5) + (p.weight < 30 ? 15 : 5) + Math.random()*3|0);
+  const bpm = p.species==='cat'?140:80;
+  const temp = p.species==='cat'?38.5:38.2;
+
+  document.getElementById('dash-grid').innerHTML = `
+    <!-- PET PROFILE -->
+    <div class="card pet-profile-card">
+      <div class="pet-avatar-wrap">${p.emoji}</div>
+      <div class="pet-name-big">${p.name}</div>
+      <div class="pet-breed">${p.breed} · ${p.species}</div>
+      <div class="pet-stats-grid">
+        <div class="pet-stat"><div class="pet-stat-val">${p.age}y</div><div class="pet-stat-label">Age</div></div>
+        <div class="pet-stat"><div class="pet-stat-val">${p.weight}kg</div><div class="pet-stat-label">Weight</div></div>
+        <div class="pet-stat"><div class="pet-stat-val">${p.species==='cat'?'♀':'♂'}</div><div class="pet-stat-label">Sex</div></div>
+        <div class="pet-stat"><div class="pet-stat-val">A+</div><div class="pet-stat-label">Blood</div></div>
+      </div>
+      <div class="wellness-score-wrap">
+        <div class="card-label">Wellness Score</div>
+        <div class="wellness-ring"><div class="wellness-ring-inner">${wellness}</div></div>
+        <div class="wellness-label">${wellness>85?'Excellent':'Good'} health status</div>
+      </div>
+    </div>
+
+    <!-- UPCOMING CARE -->
+    <div class="card">
+      <div class="card-label">Upcoming Care</div>
+      <div class="care-item">
+        <div class="care-date"><div class="care-date-day">28</div><div class="care-date-mon">Apr</div></div>
+        <div class="care-info"><div class="care-title">Rabies Booster</div><div class="care-sub">Annual vaccination due</div></div>
+        <button class="care-action" onclick="showToast('Reminder set! 📅')">Remind</button>
+      </div>
+      <div class="care-item">
+        <div class="care-date"><div class="care-date-day">05</div><div class="care-date-mon">May</div></div>
+        <div class="care-info"><div class="care-title">Dental Checkup</div><div class="care-sub">6-month cleaning overdue</div></div>
+        <button class="care-action" onclick="showToast('Booking request sent!')">Book</button>
+      </div>
+      <div class="care-item">
+        <div class="care-date"><div class="care-date-day">12</div><div class="care-date-mon">May</div></div>
+        <div class="care-info"><div class="care-title">Flea & Tick Treatment</div><div class="care-sub">Monthly preventive</div></div>
+        <button class="care-action" onclick="showToast('Reminder set! 📅')">Remind</button>
+      </div>
+      <div class="care-item">
+        <div class="care-date"><div class="care-date-day">20</div><div class="care-date-mon">Jun</div></div>
+        <div class="care-info"><div class="care-title">Annual Wellness Exam</div><div class="care-sub">Full body checkup</div></div>
+        <button class="care-action" onclick="showToast('Booking request sent!')">Book</button>
+      </div>
+    </div>
+
+    <!-- AI INSIGHTS -->
+    <div class="card insights-card">
+      <div class="card-label">AI Insights</div>
+      <div class="insight-item">
+        <div class="insight-icon">⚠️</div>
+        <div>
+          <div class="insight-text"><strong>Dental risk detected.</strong> ${p.name}'s breed has elevated dental disease risk after age 3. Last cleaning was 8 months ago.</div>
+          <span class="insight-priority high">High Priority</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-icon">🍽️</div>
+        <div>
+          <div class="insight-text"><strong>Weight in range</strong> for age and breed. Consider adding omega-3 supplements for coat health.</div>
+          <span class="insight-priority low">Routine</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-icon">🧪</div>
+        <div>
+          <div class="insight-text"><strong>Lab work recommended.</strong> ${p.age > 6 ? 'Senior' : 'Adult'} pets benefit from annual bloodwork to catch early-stage conditions.</div>
+          <span class="insight-priority med">Medium</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VITALS -->
+    <div class="card">
+      <div class="card-label">Latest Vitals <span style="font-size:0.65rem;color:var(--muted);margin-left:0.5rem">· Mar 2025</span></div>
+      <div class="vitals-grid">
+        <div class="vital-cell">
+          <div class="vital-val">${bpm}<span class="vital-unit"> bpm</span></div>
+          <div class="vital-name">Heart Rate</div>
+          <div class="vital-trend ok">↗ Normal range</div>
+        </div>
+        <div class="vital-cell">
+          <div class="vital-val">${temp}<span class="vital-unit"> °C</span></div>
+          <div class="vital-name">Temperature</div>
+          <div class="vital-trend ok">✓ Optimal</div>
+        </div>
+        <div class="vital-cell">
+          <div class="vital-val">${p.weight}<span class="vital-unit"> kg</span></div>
+          <div class="vital-name">Body Weight</div>
+          <div class="vital-trend ok">↔ Stable</div>
+        </div>
+        <div class="vital-cell">
+          <div class="vital-val">4.2<span class="vital-unit">/5</span></div>
+          <div class="vital-name">BCS Score</div>
+          <div class="vital-trend up">⚠ Slightly high</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEALTH TIMELINE -->
+    <div class="card" style="grid-column:span 1">
+      <div class="card-label">Health Timeline</div>
+      <div class="tl-item">
+        <div class="tl-dot vacc">💉</div>
+        <div class="tl-content">
+          <div class="tl-title">DHPP Booster</div>
+          <div class="tl-meta">Dr. Priya Sharma · Jan 15, 2025</div>
+          <span class="tl-badge ok">Completed</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot visit">🏥</div>
+        <div class="tl-content">
+          <div class="tl-title">Routine Checkup</div>
+          <div class="tl-meta">PetCare Clinic · Mar 2, 2025</div>
+          <span class="tl-badge ok">Completed</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot med">💊</div>
+        <div class="tl-content">
+          <div class="tl-title">Deworming</div>
+          <div class="tl-meta">Self-administered · Apr 1, 2025</div>
+          <span class="tl-badge ok">Done</span>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot alert">⚠️</div>
+        <div class="tl-content">
+          <div class="tl-title">Rabies Vaccine</div>
+          <div class="tl-meta">Due · Apr 28, 2025</div>
+          <span class="tl-badge due">Due Soon</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchPet(id){
+  activePet = pets.find(p=>p.id===id);
+  renderDashboard();
+}
+
+/* ── RECORDS ── */
+const RECORDS = {
+  vaccinations:[
+    {date:'Jan 15 2025',name:'DHPP Booster',doc:'Dr. P. Sharma',status:'done'},
+    {date:'Apr 28 2025',name:'Rabies Annual',doc:'Dr. P. Sharma',status:'due'},
+    {date:'Jun 2024',name:'Leptospirosis',doc:'Dr. R. Mehta',status:'done'},
+    {date:'Jan 2024',name:'Bordetella',doc:'Dr. P. Sharma',status:'done'},
+  ],
+  visits:[
+    {date:'Mar 2 2025',name:'Routine Wellness',doc:'Dr. P. Sharma',status:'done'},
+    {date:'Nov 2024',name:'Ear Infection',doc:'Dr. R. Mehta',status:'done'},
+    {date:'May 2024',name:'Annual Physical',doc:'Dr. P. Sharma',status:'done'},
+  ],
+  medications:[
+    {date:'Apr 1 2025',name:'Deworming (Drontal)',doc:'Self',status:'done'},
+    {date:'Mar–Apr 2025',name:'Frontline Flea',doc:'Monthly',status:'active'},
+    {date:'Nov 2024',name:'Ear Drops (7 days)',doc:'Dr. R. Mehta',status:'done'},
+  ],
+  labwork:[
+    {date:'Mar 2 2025',name:'CBC + Chemistry Panel',doc:'PetCare Lab',status:'done'},
+    {date:'May 2024',name:'Heartworm Test',doc:'PetCare Lab',status:'done'},
+    {date:'Mar 2024',name:'Urinalysis',doc:'Dr. P. Sharma',status:'done'},
+  ]
+};
+
+function renderRecords(tab){
+  const rows = RECORDS[tab];
+  document.getElementById('records-content').innerHTML = `
+    <div class="record-table">
+      <div class="rt-head"><div>Date</div><div>Procedure</div><div>Doctor/Source</div><div>Status</div></div>
+      ${rows.map(r=>`
+        <div class="rt-row">
+          <div class="rt-cell date">${r.date}</div>
+          <div class="rt-cell">${r.name}</div>
+          <div class="rt-cell doc">${r.doc}</div>
+          <div class="rt-cell"><span class="status-pill ${r.status}">${r.status==='done'?'Completed':r.status==='due'?'Due Soon':'Active'}</span></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function switchRecordTab(el,tab){
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderRecords(tab);
+}
+
+/* ── VET CONNECT ── */
+function renderVet(){
+  document.getElementById('vet-content').innerHTML = `
+    <div class="vet-card">
+      <div class="vet-info-row">
+        <div class="vet-avatar">👩‍⚕️</div>
+        <div>
+          <div class="vet-name">Dr. Priya Sharma</div>
+          <div class="vet-creds">BVSc & AH · MVSc (Internal Medicine)</div>
+          <div class="vet-clinic">PetCare Clinic, Bandra, Mumbai</div>
+        </div>
+      </div>
+      <div class="vet-actions">
+        <button class="vet-btn primary" onclick="showToast('Booking request sent to Dr. Sharma!')">Book Appointment</button>
+        <button class="vet-btn outline" onclick="showToast('Video call initiated!')">Video Consult</button>
+        <button class="vet-btn outline" onclick="showToast('Records shared!')">Share Records</button>
+      </div>
+      <div class="vet-msg-thread">
+        <div style="font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;font-weight:600">Recent Messages</div>
+        <div class="vet-msg">
+          <div class="vet-msg-avatar">👩‍⚕️</div>
+          <div class="vet-msg-body">
+            <div class="vet-msg-name">Dr. Priya Sharma</div>
+            <div class="vet-msg-text">Hi! Just checking in after Bruno's visit. How is he doing with the ear drops? Any improvement in the scratching?</div>
+            <div class="vet-msg-time">Apr 14, 2025 · 10:22 AM</div>
+          </div>
+        </div>
+        <div class="vet-msg">
+          <div class="vet-msg-avatar">🧑</div>
+          <div class="vet-msg-body">
+            <div class="vet-msg-name">You</div>
+            <div class="vet-msg-text">Yes! Much better. He's barely scratching now. Finishing the last 2 days of drops. Should I come in for a follow-up or just monitor?</div>
+            <div class="vet-msg-time">Apr 14, 2025 · 11:05 AM</div>
+          </div>
+        </div>
+        <div class="vet-msg">
+          <div class="vet-msg-avatar">👩‍⚕️</div>
+          <div class="vet-msg-body">
+            <div class="vet-msg-name">Dr. Priya Sharma</div>
+            <div class="vet-msg-text">Wonderful news! No follow-up needed unless symptoms return. His rabies booster is due end of April — want me to schedule that?</div>
+            <div class="vet-msg-time">Apr 14, 2025 · 11:30 AM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="vet-card">
+      <div class="vet-info-row">
+        <div class="vet-avatar">👨‍⚕️</div>
+        <div>
+          <div class="vet-name">Dr. Rahul Mehta</div>
+          <div class="vet-creds">BVSc · Emergency & Critical Care</div>
+          <div class="vet-clinic">PetCare 24/7, Andheri, Mumbai</div>
+        </div>
+      </div>
+      <div class="vet-actions">
+        <button class="vet-btn primary" onclick="showToast('Emergency line connected!')">Emergency Line</button>
+        <button class="vet-btn outline" onclick="showToast('Message sent to Dr. Mehta!')">Message</button>
+      </div>
+    </div>`;
+}
+
+/* ── AI CHAT ── */
+function saveApiKey(){
+  const val = document.getElementById('api-key-input').value.trim();
+  if(!val.startsWith('sk-')){ showToast('Invalid key format'); return; }
+  apiKey = val;
+  document.getElementById('api-notice').style.display='none';
+  showToast('API key saved! AI is ready 🧠');
+}
+
+function handleKey(e){
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+}
+
+function sendQuick(btn){ 
+  document.getElementById('chat-input').value = btn.textContent;
+  sendMessage();
+}
+
+async function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  appendMsg('user', text);
+  chatHistory.push({role:'user', content:text});
+
+  const typingEl = appendTyping();
+
+  if(!apiKey){
+    await new Promise(r=>setTimeout(r,1200));
+    typingEl.remove();
+    const demoReply = getDemoReply(text);
+    appendMsg('ai', demoReply);
+    chatHistory.push({role:'assistant', content:demoReply});
+    return;
+  }
+
+  try{
+    const petContext = activePet ? `The user's pet is ${activePet.name}, a ${activePet.age}-year-old ${activePet.breed} ${activePet.species} weighing ${activePet.weight}kg.` : '';
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:600,
+        system:`You are PawOS, an empathetic AI pet health assistant. ${petContext} Give concise, caring, evidence-based answers. Use simple language. Format with short paragraphs. Add relevant emojis. Always recommend consulting a vet for serious concerns.`,
+        messages:chatHistory.slice(-10)
+      })
+    });
+    const data = await res.json();
+    typingEl.remove();
+    const reply = data.content?.[0]?.text || "I couldn't process that. Please try again.";
+    appendMsg('ai', reply);
+    chatHistory.push({role:'assistant', content:reply});
+  } catch(e){
+    typingEl.remove();
+    appendMsg('ai','Connection error. Please check your API key and try again.');
+  }
+}
+
+function appendMsg(role, text){
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  div.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-meta">${role==='user'?'You':'PawOS AI'} · ${now}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function appendTyping(){
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.innerHTML = `<div class="msg-bubble" style="background:var(--cream);border:1px solid var(--border)"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function getDemoReply(q){
+  q = q.toLowerCase();
+  if(q.includes('weight')) return `For a ${activePet?.breed||'dog'} of ${activePet?.age||3} years, weight management is key! 🐾\n\nA healthy BCS (body condition score) is 4-5 out of 9. You can check at home by: can you feel the ribs easily without pressing hard? If not, your pet may be slightly overweight.\n\nI'd recommend a vet visit to get an accurate assessment and tailored diet plan. Regular exercise also makes a big difference!`;
+  if(q.includes('vaccin') || q.includes('due')) return `Based on ${activePet?.name||'your pet'}'s records, the upcoming vaccines are:\n\n💉 Rabies Booster — due April 28\n💉 DHPP Booster — due January 2026\n\nI'd recommend booking the rabies appointment soon — it's required by law in most cities! Want me to send a reminder to Dr. Sharma?`;
+  if(q.includes('dental')) return `Dental disease is one of the most overlooked pet health issues! 🦷\n\nSigns to watch for: bad breath, yellow/brown tartar, red gums, pawing at mouth, or dropping food.\n\nFor prevention: daily brushing is ideal, but even 3x per week helps. Dental chews and water additives also reduce plaque buildup.\n\n${activePet?.name||'Your pet'}'s last dental checkup was 8+ months ago — a professional cleaning is recommended!`;
+  if(q.includes('nutrition') || q.includes('food') || q.includes('senior')) return `Nutrition for senior pets (7+ years) looks a bit different! 🍽️\n\nKey adjustments:\n• Lower calorie density (metabolism slows)\n• Higher quality protein to maintain muscle\n• Joint supplements like glucosamine & omega-3s\n• More frequent smaller meals\n\nAvoid: high sodium treats, excessive carbs, and artificial preservatives. A vet-recommended senior formula is usually the best starting point!`;
+  if(q.includes('urgent') || q.includes('emergency')) return `🚨 Seek emergency vet care immediately for:\n\n• Difficulty breathing or choking\n• Seizures or sudden collapse\n• Suspected poisoning\n• Uncontrolled bleeding\n• Unable to urinate (especially male cats)\n• Bloated, hard abdomen\n• Pale/white gums\n\nFor non-emergencies, watch for: lethargy lasting 24h+, vomiting 3+ times, limping, or sudden behaviour changes. When in doubt, always call your vet!`;
+  return `Great question about ${activePet?.name||'your pet'}! 🐾\n\nAs your AI wellness assistant, I can help with general guidance on symptoms, nutrition, preventive care, and understanding health patterns.\n\nFor personalized medical advice specific to ${activePet?.name||'your pet'}'s condition, I'd recommend connecting with Dr. Sharma via the Vet Connect tab — she knows ${activePet?.name||'your pet'}'s full history!\n\nIs there something specific you noticed that I can help you understand better?`;
+}
+
+/* ── TOAST ── */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
